@@ -77,17 +77,19 @@ correlation_matrix <- cor(data)
 
 colnames(data)
 #Logit model
-logit_model <- glm(factor(LUNG_CANCER) ~ factor(SMOKING_2) + factor(ANXIETY_2) +
-                     factor(YELLOW_FINGERS_2) + factor(CHRONIC.DISEASE_2) + 
-                     factor(FATIGUE_2) + factor(ALLERGY_2) + factor(COUGHING_2) +
-                     factor(PEER_PRESSURE_2) + factor(WHEEZING_2) + AGE +
-                     factor(ALCOHOL.CONSUMING_2) + factor(COUGHING_2) + 
-                     factor(SWALLOWING.DIFFICULTY_2) + factor(CHEST.PAIN_2) +
-                     factor(SHORTNESS.OF.BREATH_2) + factor(GENDER_M), 
+logit_model <- glm(factor(`lung cancer`) ~ factor(smoking) + factor(anxiety) +
+                     factor(`yellow fingers`) + factor(`chronic disease`) + 
+                     factor(fatigue) + factor(allergy) + factor(coughing) +
+                     factor(`peer pressure`) + factor(wheezing) + AGE +
+                     factor(`alcohol consumption`) + factor(coughing) + 
+                     factor(`swallowing difficulty`) + factor(`chest pain`) +
+                     factor(`shortnesss of breath`) + factor(gender), 
                    family = binomial(link = "logit"), data = data)
 summary(logit_model)
 sd(logit_model$fitted.values)
 BIC(logit_model)
+confint(logit_model)
+
 predicted_logit <- data.frame(probability.of.LC = logit_model$fitted.values, LC = as.factor(data$LUNG_CANCER))
 predicted_logit <- predicted_logit[order(predicted_logit$probability.of.LC, decreasing = FALSE),]  
 predicted_logit$rank <- 1:nrow(predicted_logit)
@@ -141,17 +143,18 @@ bgtest(logit_model)
 vif(logit_model)
 
 #Probit model
-probit_model <- glm(factor(LUNG_CANCER) ~ factor(SMOKING_2) + factor(ANXIETY_2) +
-                      factor(YELLOW_FINGERS_2) + factor(CHRONIC.DISEASE_2) + 
-                      factor(FATIGUE_2) + factor(ALLERGY_2) + factor(COUGHING_2) +
-                      factor(PEER_PRESSURE_2) + factor(WHEEZING_2) + AGE +
-                      factor(ALCOHOL.CONSUMING_2) + factor(COUGHING_2) + 
-                      factor(SWALLOWING.DIFFICULTY_2) + factor(CHEST.PAIN_2) +
-                      factor(SHORTNESS.OF.BREATH_2) + factor(GENDER_M), 
+probit_model <- glm(factor(`lung cancer`) ~ factor(smoking) + factor(anxiety) +
+                     factor(`yellow fingers`) + factor(`chronic disease`) + 
+                     factor(fatigue) + factor(allergy) + factor(coughing) +
+                     factor(`peer pressure`) + factor(wheezing) + AGE +
+                     factor(`alcohol consumption`) + factor(coughing) + 
+                     factor(`swallowing difficulty`) + factor(`chest pain`) +
+                     factor(`shortnesss of breath`) + factor(gender), 
                     family = binomial(link = "probit"), data = data)
 summary(probit_model)
 sd(probit_model$fitted.values)
 BIC(probit_model)
+confint(probit_model)
 
 predicted_probit <- data.frame(probability.of.LC = probit_model$fitted.values, LC = as.factor(data$LUNG_CANCER))
 predicted_probit <- predicted_probit[order(predicted_probit$probability.of.LC, decreasing = FALSE),]  
