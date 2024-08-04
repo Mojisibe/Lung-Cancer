@@ -49,25 +49,30 @@ ggplot(lung_cancer_data, aes(x = AGE)) +
 # Convert all variables except 'z' to character
 data[, -which(names(data) == "AGE")] <- lapply(data[, -which(names(data) == "AGE")], 
                                                as.character)
-str(data)
-data <- dummy_cols(data, select_columns = c("GENDER", "SMOKING",
+str(data)data <- dummy_cols(data, select_columns = c("GENDER", "SMOKING",
                                              "YELLOW_FINGERS", "ANXIETY", "ALLERGY",
                                              "PEER_PRESSURE", "CHRONIC.DISEASE",
                                              "FATIGUE", "WHEEZING", "COUGHING",
                                              "ALCOHOL.CONSUMING", "CHEST.PAIN",
                                              "SWALLOWING.DIFFICULTY", 
-                                             "SHORTNESS.OF.BREATH"), 
+                                             "SHORTNESS.OF.BREATH", "LUNG_CANCER"), 
                    remove_selected_columns = TRUE)
 data = subset(data, select = -c(GENDER_F, SMOKING_1,YELLOW_FINGERS_1, 
                                 ANXIETY_1, ALLERGY_1, PEER_PRESSURE_1, COUGHING_1,
                                 CHRONIC.DISEASE_1, FATIGUE_1, WHEEZING_1, 
                                 ALCOHOL.CONSUMING_1, CHEST.PAIN_1, 
-                                SWALLOWING.DIFFICULTY_1, SHORTNESS.OF.BREATH_1))
+                                SWALLOWING.DIFFICULTY_1, SHORTNESS.OF.BREATH_1, LUNG_CANCER_NO))
+data <- data %>%
+  rename(gender = GENDER_M, smoking = SMOKING_2, `yellow fingers` = YELLOW_FINGERS_2, 
+         anxiety = ANXIETY_2, allergy = ALLERGY_2, `peer pressure` = PEER_PRESSURE_2, coughing = COUGHING_2, 
+         `chronic disease` = CHRONIC.DISEASE_2, fatigue = FATIGUE_2, wheezing = WHEEZING_2,
+         `alcohol consumption` = ALCOHOL.CONSUMING_2, `chest pain` = CHEST.PAIN_2, 
+         `swallowing difficulty` = SWALLOWING.DIFFICULTY_2, 
+         `shortnesss of breath` = SHORTNESS.OF.BREATH_2, `lung cancer` = LUNG_CANCER_YES)
 head(data)
 attach(data)
 summary(data)
 correlation_matrix <- cor(data)
-corrplot(correlation_matrix, method = "color")
 
 
 colnames(data)
