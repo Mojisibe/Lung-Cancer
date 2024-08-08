@@ -62,7 +62,7 @@ data = subset(data, select = -c(GENDER_F, SMOKING_1,YELLOW_FINGERS_1,
                                 CHRONIC.DISEASE_1, FATIGUE_1, WHEEZING_1, 
                                 ALCOHOL.CONSUMING_1, CHEST.PAIN_1, 
                                 SWALLOWING.DIFFICULTY_1, SHORTNESS.OF.BREATH_1, LUNG_CANCER_NO))
-data <- data %>%
+df <- data %>%
   rename(gender = GENDER_M, smoking = SMOKING_2, `yellow fingers` = YELLOW_FINGERS_2, 
          anxiety = ANXIETY_2, allergy = ALLERGY_2, `peer pressure` = PEER_PRESSURE_2, coughing = COUGHING_2, 
          `chronic disease` = CHRONIC.DISEASE_2, fatigue = FATIGUE_2, wheezing = WHEEZING_2,
@@ -72,8 +72,8 @@ data <- data %>%
 head(data)
 attach(data)
 summary(data)
-correlation_matrix <- cor(data)
-
+correlation_matrix <- cor(df)
+corrplot(correlation_matrix, method = "color")
 
 colnames(data)
 #Logit model
