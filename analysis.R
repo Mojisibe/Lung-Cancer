@@ -62,7 +62,7 @@ data = subset(data, select = -c(GENDER_F, SMOKING_1,YELLOW_FINGERS_1,
                                 CHRONIC.DISEASE_1, FATIGUE_1, WHEEZING_1, 
                                 ALCOHOL.CONSUMING_1, CHEST.PAIN_1, 
                                 SWALLOWING.DIFFICULTY_1, SHORTNESS.OF.BREATH_1, LUNG_CANCER_NO))
-df <- data %>%
+data <- data %>%
   rename(gender = GENDER_M, smoking = SMOKING_2, `yellow fingers` = YELLOW_FINGERS_2, 
          anxiety = ANXIETY_2, allergy = ALLERGY_2, `peer pressure` = PEER_PRESSURE_2, coughing = COUGHING_2, 
          `chronic disease` = CHRONIC.DISEASE_2, fatigue = FATIGUE_2, wheezing = WHEEZING_2,
@@ -72,8 +72,28 @@ df <- data %>%
 head(data)
 attach(data)
 summary(data)
-correlation_matrix <- cor(df)
+correlation_matrix <- cor(data)
 corrplot(correlation_matrix, method = "color")
+
+ggplot(data, aes(x = factor(gender), fill = factor(`lung cancer`))) +
+  geom_bar(position = "dodge") +
+  labs(x = "Gender", y = "Count", fill = "Lung cancer") +
+  scale_fill_discrete(labels = c("No", "Yes")) +
+  scale_x_discrete(labels = c("Male", "Female"))
+
+data_proportions <- data %>%
+  group_by(`lung cancer`, smoking) %>%
+  tally() %>%
+  group_by(smoking) %>%
+  mutate(Proportion = n / sum(n))
+ggplot(data_proportions, aes(x = factor(`lung cancer`), y= Proportion, fill = factor(smoking))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_y_continuous(limits = c(0,1), labels = scales::percent_format()) +
+  labs(x = "Lung cancer", y = "Proportion", fill = "Smoking") +
+  scale_fill_discrete(labels = c("No", "Yes")) +
+  scale_x_discrete(labels = c("No", "Yes"))+
+  facet_wrap(~ smoking, labeller = as_labeller(c('0' = "No", '1' = "Yes")))
+
 
 colnames(data)
 #Logit model
@@ -90,7 +110,7 @@ sd(logit_model$fitted.values)
 BIC(logit_model)
 confint(logit_model)
 
-predicted_logit <- data.frame(probability.of.LC = logit_model$fitted.values, LC = as.factor(data$LUNG_CANCER))
+predicted_logit <- data.frame(probability.of.LC = logit_model$fitted.values, LC = as.factor(data$`lung cancer`))
 predicted_logit <- predicted_logit[order(predicted_logit$probability.of.LC, decreasing = FALSE),]  
 predicted_logit$rank <- 1:nrow(predicted_logit)
 
@@ -103,7 +123,7 @@ ggplot(data = predicted_logit, aes(x = rank, y = probability.of.LC)) +
 predicted_probabilities <- predict(logit_model, type = "response")
 predicted_classes <- ifelse(predicted_probabilities > 0.5, "Yes", "No")
 # Actual classes
-actual_classes <- data$LUNG_CANCER
+actual_classes <- data$`lung cancer`
 
 # Create confusion matrix
 confusion_matrix <- table(Predicted = predicted_classes, Actual = actual_classes)
@@ -111,7 +131,7 @@ print(confusion_matrix)
 
 # Calculate precision
 predicted_classes_logit <- ifelse(predicted_classes == "Yes", 1, 0)
-actual_classes <- ifelse(actual_classes == "YES", 1, 0)
+#actual_classes <- ifelse(actual_classes == "YES", 1, 0)
 precision_logit <- sum(predicted_classes_logit & actual_classes) / sum(predicted_classes_logit)
 print(precision_logit)
 
@@ -144,19 +164,19 @@ vif(logit_model)
 
 #Probit model
 probit_model <- glm(factor(`lung cancer`) ~ factor(smoking) + factor(anxiety) +
-                     factor(`yellow fingers`) + factor(`chronic disease`) + 
-                     factor(fatigue) + factor(allergy) + factor(coughing) +
-                     factor(`peer pressure`) + factor(wheezing) + AGE +
-                     factor(`alcohol consumption`) + factor(coughing) + 
-                     factor(`swallowing difficulty`) + factor(`chest pain`) +
-                     factor(`shortnesss of breath`) + factor(gender), 
+                      factor(`yellow fingers`) + factor(`chronic disease`) + 
+                      factor(fatigue) + factor(allergy) + factor(coughing) +
+                      factor(`peer pressure`) + factor(wheezing) + AGE +
+                      factor(`alcohol consumption`) + factor(coughing) + 
+                      factor(`swallowing difficulty`) + factor(`chest pain`) +
+                      factor(`shortnesss of breath`) + factor(gender), 
                     family = binomial(link = "probit"), data = data)
 summary(probit_model)
 sd(probit_model$fitted.values)
 BIC(probit_model)
 confint(probit_model)
 
-predicted_probit <- data.frame(probability.of.LC = probit_model$fitted.values, LC = as.factor(data$LUNG_CANCER))
+predicted_probit <- data.frame(probability.of.LC = probit_model$fitted.values, LC = as.factor(data$`lung cancer`))
 predicted_probit <- predicted_probit[order(predicted_probit$probability.of.LC, decreasing = FALSE),]  
 predicted_probit$rank <- 1:nrow(predicted_probit)
 
@@ -168,8 +188,6 @@ ggplot(data = predicted_probit, aes(x = rank, y = probability.of.LC)) +
 # Predict outcomes
 predicted_probabilities_probit <- predict(probit_model, type = "response")
 predicted_classes_probit <- ifelse(predicted_probabilities_probit > 0.5, "YES", "NO")
-# Actual classes
-actual_classes <- data$LUNG_CANCER
 
 # Create confusion matrix
 confusion_matrix_probit <- table(Predicted = predicted_classes_probit, Actual = actual_classes)
